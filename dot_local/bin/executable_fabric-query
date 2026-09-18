@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# fabric-query — Pipe editor selection (or stdin) into an AI model via fabric
+# Usage: <selection> | fabric-query [pattern]
+#   pattern defaults to "summarize"
+# Requires: fabric (https://github.com/danielmiessler/fabric)
+
+set -euo pipefail
+
+PATTERN="${1:-summarize}"
+
+if ! command -v fabric &>/dev/null; then
+    echo "Error: 'fabric' is not installed. See https://github.com/danielmiessler/fabric" >&2
+    exit 1
+fi
+
+exec fabric --pattern "$PATTERN"

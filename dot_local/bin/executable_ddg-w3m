@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# ddg-w3m — Search DuckDuckGo in the w3m text browser
+# Usage: ddg-w3m <query>
+
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: ddg-w3m <search query>" >&2
+    exit 1
+fi
+
+if ! command -v w3m &>/dev/null; then
+    echo "Error: 'w3m' is not installed. Run: brew install w3m" >&2
+    exit 1
+fi
+
+# URL-encode the query (replace spaces with +)
+QUERY="${*// /+}"
+exec w3m "https://duckduckgo.com/lite?q=${QUERY}&kd=-1"

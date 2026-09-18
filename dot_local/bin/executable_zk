@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# zk — Personal Zettelkasten note-taking CLI
+# Usage:
+#   zk new [title]   — Create a new note
+#   zk list          — List all notes
+#   zk search <q>    — Search note content
+#   zk edit [title]  — Open matching note in $EDITOR
+#
+# Notes are stored in ~/notes/ as plain markdown files.
+
+set -euo pipefail
+
+NOTES_DIR="${ZK_NOTES_DIR:-$HOME/notes}"
+EDITOR="${EDITOR:-nvim}"
+
+mkdir -p "$NOTES_DIR"
+
+usage() {
+    echo "Usage: zk <command> [args]"
+    echo ""
+    echo "Commands:"
+    echo "  new [title]    Create a new note (title optional)"
+    echo "  list           List all notes"
+    echo "  search <q>     Search note content"
+    echo "  edit <title>   Open matching note in \$EDITOR"
+    exit 1
+}
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+    new)
+        TITLE="${*:-$(date '+%Y-%m-%d')}"
+        SLUG="${TITLE// /-}"
+        SLUG="${SLUG,,}"
+        FILE="$NOTES_DIR/$(date '+%Y%m%d%H%M%S')-${SLUG}.md"
+        {
+            echo "# ${TITLE}"
+            echo ""
+            echo "Date: $(date '+%Y-%m-%d')"
+            echo "Tags: "
+            echo ""
+            echo "---"
+            echo ""
+        } > "$FILE"
+        exec "$EDITOR" "$FILE"
+        ;;
+    list)
+        ls -t "$NOTES_DIR"/*.md 2>/dev/null | while read -r f; do
+            head -n1 "$f" | sed 's/^# //'
+            echo "  $f"
+        done
+        ;;
+    search)
+        [[ $# -eq 0 ]] && usage
+        grep -ril "$*" "$NOTES_DIR" 2>/dev/null || echo "No results."
+        ;;
+    edit)
+        [[ $# -eq 0 ]] && usage
+        MATCH=$(grep -ril "$*" "$NOTES_DIR" 2>/dev/null | head -n1)
+        if [[ -z "$MATCH" ]]; then
+            echo "No note found matching: $*" >&2
+            exit 1
+        fi
+        exec "$EDITOR" "$MATCH"
+        ;;
+    *)
+        usage
+        ;;
+esac

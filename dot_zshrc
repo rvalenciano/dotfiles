@@ -1,0 +1,56 @@
+# ==============================================================================
+# ~/.zshrc — Zsh environment & shell configuration
+# Managed by chezmoi: https://github.com/twpayne/chezmoi
+# ==============================================================================
+
+# --- Homebrew ---
+if [[ -f "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f "/usr/local/bin/brew" ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+# --- PATH ---
+export PATH="$HOME/.local/bin:$PATH"
+
+# --- Editor ---
+export EDITOR="nvim"
+export VISUAL="nvim"
+
+# --- Completions ---
+autoload -Uz compinit && compinit
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
+# --- History ---
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_IGNORE_DUPS HIST_IGNORE_SPACE SHARE_HISTORY
+
+# --- Keybindings (vi mode) ---
+bindkey -v
+bindkey '^R' history-incremental-search-backward
+
+# --- fzf ---
+if command -v fzf &>/dev/null; then
+    source <(fzf --zsh)
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
+# --- zoxide (smarter cd) ---
+if command -v zoxide &>/dev/null; then
+    eval "$(zoxide init zsh)"
+fi
+
+# --- Aliases ---
+alias v="nvim"
+alias t="tmux"
+alias g="git"
+alias ls="ls --color=auto"
+alias ll="ls -lah"
+alias grep="grep --color=auto"
+
+# --- Local overrides (not managed by chezmoi) ---
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
